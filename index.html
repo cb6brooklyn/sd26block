@@ -10,8 +10,8 @@
 <meta property="og:title" content="My SD26 Block">
 <meta property="og:description" content="Find your block in State Senate District 26: alternate side parking, trash and recycling days, where to vote, and who represents you.">
 <meta property="og:url" content="https://sd26block.app/">
-<meta property="og:image" content="https://sd26block.app/sd26-logo.png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://sd26block.app/sd26-og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/sd26-logo.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="/assets/cd-page.css">
@@ -142,7 +142,7 @@ Array.prototype.forEach.call(btns,function(b){
 
 if(window.L&&document.getElementById('map')){
   map=L.map('map',{scrollWheelZoom:false}).setView([40.657,-74.005],12);
-  L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_2hyw_1_9cda1572a3817275ed412c0e',
     {attribution:'&copy; OpenStreetMap contributors, &copy; CARTO',maxZoom:19}).addTo(map);
 }
 
