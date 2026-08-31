@@ -56,6 +56,8 @@ body{background:var(--off)}
 .stat i{display:block;font-style:normal;font-family:'DM Mono',monospace;font-size:.53rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-top:3px}
 .nav{display:flex;flex-wrap:wrap;gap:8px;padding:16px}
 .nav a{flex:1;min-width:150px;padding:13px;text-align:center;background:var(--navy);color:#fff;text-decoration:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700}
+.embbtn{display:block;width:calc(100% - 32px);margin:10px 16px 0;padding:13px;background:var(--orange);color:#0d1b4b;border:2px solid #0d1b4b;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:800;letter-spacing:.01em;cursor:pointer;box-shadow:0 1px 4px rgba(13,27,75,.25)}
+.embbtn:active{filter:brightness(.92)}
 .embp{margin:0 16px 16px;background:#fff;border:2px solid var(--navy);border-radius:12px;padding:14px 16px;font-size:.86rem;line-height:1.5}
 .embp pre{font-family:'DM Mono',monospace;font-size:.72rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin:10px 0;white-space:pre-wrap;word-break:break-all}
 .embp button{padding:10px 16px;background:#244190;color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer}
@@ -108,6 +110,14 @@ body{background:var(--off)}
 
 <div id="map"></div>
 
+<button type="button" class="embbtn" id="embBtn">Embed this map on your site</button>
+
+<div class="embp" id="embP" style="display:none">
+  <b>Put this block finder on your own site.</b> Copy the code below and paste it into any web page. <a href="/embed/" target="_blank" rel="noopener">Preview the embed</a>.
+  <pre id="embCode">&lt;iframe src="https://sd26block.app/embed/" width="100%" height="640" style="border:0;border-radius:12px" title="Find your SD26 block" loading="lazy"&gt;&lt;/iframe&gt;</pre>
+  <button type="button" id="embCopy">Copy code</button>
+</div>
+
 <div class="res" id="res" style="display:none">
   <div class="rl">Closest block</div>
   <a class="card" id="resLink" href="#"><b id="resTitle"></b><em id="resSub"></em></a>
@@ -117,14 +127,8 @@ body{background:var(--off)}
 <div class="nav">
   <a href="/block/">Browse all block cards</a>
   <a href="https://www.senatorgounardes.nyc/" target="_blank" rel="noopener">Senator Gounardes Website</a>
-  <a href="#" id="embBtn">Embed this map</a>
 </div>
 
-<div class="embp" id="embP" style="display:none">
-  <b>Put this block finder on your own site.</b> Copy the code below and paste it into any web page. <a href="/embed/" target="_blank" rel="noopener">Preview the embed</a>.
-  <pre id="embCode">&lt;iframe src="https://sd26block.app/embed/" width="100%" height="640" style="border:0;border-radius:12px" title="Find your SD26 block" loading="lazy"&gt;&lt;/iframe&gt;</pre>
-  <button type="button" id="embCopy">Copy code</button>
-</div>
 
 <div class="foot">
 Built from the DOT street centerline, DOT parking signs, DSNY collection frequencies, NYC Board of Elections poll sites, PLUTO zoning, and the NYC district boundary files. Every fact on a block card is placed by that block's own coordinates.<br><br>
