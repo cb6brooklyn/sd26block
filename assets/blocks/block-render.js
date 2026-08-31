@@ -35,10 +35,13 @@ function render(D){
   // pickup
   h+='<section class="card"><h2><img class="h2i" src="/site-icons/agencies/dsny.png" alt="">Trash and recycling</h2>';
   if(!D.dsny.length)h+='<p class="muted">No DSNY residential schedule on file here.</p>';
+  if(D.dsny.length>1)h+='<p class="splitnote"><b>This block is split between '+D.dsny.length+' collection schedules.</b> DSNY draws its routes along block faces, so buildings on this block do not all get picked up on the same days. Find your part of the block below and follow that schedule.</p>';
   if(D.byday.length){h+='<div class="byday">';D.byday.forEach(function(r){h+='<div class="bd"><b>'+esc(r[0])+'</b><span>'+esc(r[1].join(', '))+'</span></div>';});h+='</div>';}
-  D.dsny.forEach(function(d,i){h+='<div class="pick">';
+  D.dsny.forEach(function(d,i){
+    if(D.dsny.length>1)h+='<div class="whereh"><span class="wn">'+(i+1)+'</span><b>'+esc(d.where||'Part of this block')+'</b></div>';
+    h+='<div class="pick">';
     [['dsny-trash','Trash',d.refuse,d.refuse_d],['dsny-recycle','Recycling',d.recycling,d.recycling_d],['dsny-compost','Compost',d.organics,d.organics_d],['dsny-truck','Bulk items',d.bulk,'']].forEach(function(t){h+='<div class="pk"><img src="/assets/blocks/'+t[0]+'.png" alt=""><i>'+t[1]+'</i><b>'+esc(t[2])+'</b>'+(t[3]?'<em>next '+esc(nextDay(t[3]))+'</em>':'')+'</div>';});
-    h+='</div><p class="muted">DSNY section '+esc(d.section)+(d.code?', schedule '+esc(d.code):'')+'. Set out after 6 PM the evening before, or 8 PM in a bin. Bins are required for trash.'+(D.dsny.length>1&&i===0?' This block is split between two collection schedules; the second follows.':'')+'</p>';});
+    h+='</div><p class="muted">'+(D.dsny.length>1&&d.where?'Applies to <b>'+esc(d.where.charAt(0).toLowerCase()+d.where.slice(1))+'</b>. ':'')+'DSNY section '+esc(d.section)+(d.code?', schedule '+esc(d.code):'')+'. Set out after 6 PM the evening before, or 8 PM in a bin. Bins are required for trash.'+(D.dsny.length>1?' If your building sits near the line between the two, confirm with 311.':'')+'</p>';});
   h+='</section>';
   // voting
   h+='<section class="card"><h2><img class="h2i" src="/site-icons/agencies/boe.png" alt="">Voting</h2>';

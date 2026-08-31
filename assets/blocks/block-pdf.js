@@ -5,6 +5,7 @@ var pfx=(document.getElementById('card')||{}).getAttribute?document.getElementBy
 var PAL={mn:['#0c549c','#8fb8e0','Manhattan'],bx:['#3054a8','#f06c0c','Bronx'],bk:['#003060','#f2c94c','Brooklyn'],qn:['#7a6636','#e8d9a8','Queens'],si:['#2f5a4c','#a6c4b8','Staten Island']};
 var C0='#244190',C1='#c8a24a',BNM=PAL[pfx][2];
 var NAVY='#0d1b4b',ORANGE='#f47920',MUTED='#6b6760',CREAM='#f8f7f4',RED='#95262e';
+function shortWhere(w){if(!w)return '';w=String(w).replace(/^The whole /i,'').replace(/^The /i,'');w=w.split(/,| and /)[0].replace(/ of the block$/i,'').trim();return w.toUpperCase();}
 var ORD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],DNF=['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'],DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function load(src){return new Promise(function(res,rej){if(document.querySelector('script[src="'+src+'"]')){res();return;}var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 function img(src){return new Promise(function(res){if(!src){res(null);return;}var i=new Image();i.crossOrigin='anonymous';i.onload=function(){try{var c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;c.getContext('2d').drawImage(i,0,0);res({data:c.toDataURL('image/png'),w:i.naturalWidth,h:i.naturalHeight});}catch(e){res(null);}};i.onerror=function(){res(null);};i.src=src;});}
@@ -118,12 +119,13 @@ function buildFull(){
     d.mono(6.8,'#c9cfe0');d.text(d.wrap('STATE SENATE DISTRICT 26  \u00b7  '+BNM.toUpperCase()+' CB'+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),avail)[0],M,Math.min(ly+12,HB-8));
     var G=12,colW=(W-2*M-G)/2,colL=M,colR=M+colW+G,y=HB+16,rowH=132;
     var dsn=(D.dsny||[])[0]||{};
+    var SPLITLAB=(D.dsny||[]).length>1?shortWhere(dsn.where):'';
     var dt=[['Trash',dsn.refuse||'n/a',ic[0]],['Recycling',dsn.recycling||'n/a',ic[1]],['Compost',dsn.organics||'not on this route yet',ic[2]],['Bulk items',dsn.bulk||'none scheduled',ic[3]]];
     var gw=(colW-4)/2,gh=(rowH-4)/2;
     dt.forEach(function(t,i){var x=colL+(i%2)*(gw+4),yy=y+Math.floor(i/2)*(gh+4);
       d.rect(x,yy,gw,gh,'#ffffff','#e5e2db',.8,4);
       var isz=48;d.fit(t[2],x+8,yy+(gh-isz)/2,isz,isz);
-      var tx=x+isz+15;d.mono(7,MUTED);d.text(t[0].toUpperCase(),tx,yy+20);
+      var tx=x+isz+15;d.mono(7,MUTED);d.text(t[0].toUpperCase()+(SPLITLAB?'  \u00b7  '+SPLITLAB:''),tx,yy+20);
       var vl=d.wrap(t[1],gw-isz-22),fs=vl.length>2?9.5:(vl.length>1?11.5:13.5);
       d.sans(fs,NAVY);d.wrap(t[1],gw-isz-22).slice(0,3).forEach(function(l,j){d.text(l,tx,yy+36+j*(fs+2));});});
     var sw=(colW-4)/2,asp=(D.asp||[]).slice(0,2);
@@ -179,7 +181,7 @@ function buildFull(){
     d.img(qr,M,fy+11,70,70);
     d.sans(11,C0);d.text('Scan for the live version of this card',M+82,fy+28);
     d.mono(8,C0);d.text('sd26block.app/block/'+D.slug+'/',M+82,fy+42);
-    d.body(7.5,'#444444');d.wrap('Next dates, suspensions and permits update live on the web card. Sources: DOT street centerline and parking signs, DSNY collection frequencies, NYC Board of Elections poll sites, PLUTO zoning, USPS collection boxes, NYC district boundary files. Confirm alternate side suspensions on 311.',W-M-(M+82)).forEach(function(l,i){d.text(l,M+82,fy+56+i*9);});
+    d.body(7.5,'#444444');d.wrap(((D.dsny||[]).length>1?'This block is split between '+D.dsny.length+' collection schedules; the days above are for '+(dsn.where||'part of the block').replace(/^The /,'the ')+'. See the web card for the others. ':'')+'Next dates, suspensions and permits update live on the web card. Sources: DOT street centerline and parking signs, DSNY collection frequencies, NYC Board of Elections poll sites, PLUTO zoning, USPS collection boxes, NYC district boundary files. Confirm alternate side suspensions on 311.',W-M-(M+82)).forEach(function(l,i){d.text(l,M+82,fy+56+i*9);});
     d.mono(6.5,MUTED);d.text('STATE SENATOR ANDREW GOUNARDES  \u00b7  DISTRICT 26  \u00b7  497 CARROLL ST, BROOKLYN  \u00b7  (718) 238-6044  \u00b7  GENERATED '+new Date().toISOString().slice(0,10),M,H-8);
     d.doc.save('block-card-'+D.slug+'.pdf');
   });
@@ -212,12 +214,13 @@ function buildFridge(){
     drawMap(d,M+2*(sw+4),y,cw-2*(sw+4),ih,true);
     y+=ih+13;
     var dsn=(D.dsny||[])[0]||{};
+    var SPLITLAB=(D.dsny||[]).length>1?shortWhere(dsn.where):'';
     var dt=[['Trash',dsn.refuse||'n/a',ic[0]],['Recycling',dsn.recycling||'n/a',ic[1]],['Compost',dsn.organics||'not on route yet',ic[2]],['Bulk',dsn.bulk||'none',ic[3]]];
     var gw=(cw-5)/2,gh=40;
     dt.forEach(function(t,i){var x=M+(i%2)*(gw+5),yy=y+Math.floor(i/2)*(gh+4);
       d.rect(x,yy,gw,gh,'#ffffff','#e5e2db',.8,4);
       var isz=gh-10;d.fit(t[2],x+5,yy+5,isz,isz);
-      var tx=x+isz+10;d.mono(5.4,MUTED);d.text(t[0].toUpperCase(),tx,yy+13);
+      var tx=x+isz+10;d.mono(5.4,MUTED);d.text(t[0].toUpperCase()+(SPLITLAB?'  \u00b7  '+SPLITLAB:''),tx,yy+13);
       var fs=12;d.sans(fs,NAVY);var vl=d.wrap(t[1],gw-isz-14);while(vl.length>1&&fs>8){fs-=.5;d.sans(fs,NAVY);vl=d.wrap(t[1],gw-isz-14);}
       vl.slice(0,2).forEach(function(l,j){d.text(l,tx,yy+(vl.length>1?22:27)+j*(fs+1));});});
     y+=2*(gh+4)+4;
@@ -258,7 +261,7 @@ function buildFridge(){
     d.rect(0,qy-4,W,H-(qy-4),CREAM);d.rect(0,qy-4,W,1.5,C1);
     d.img(qr,M,qy,qrs,qrs);
     d.sans(7.5,C0);d.text('Scan for the live card',M+qrs+7,qy+11);
-    d.body(5,'#444444');d.wrap('Contacts, poll site details, permits and 311 reports for this block, updated daily at sd26block.app'+(pfx==='bk'?'/block/':'/block/'+pfx+'/')+D.slug,W-M-(M+qrs+7)).slice(0,4).forEach(function(l,i){d.text(l,M+qrs+7,qy+20+i*5.6);});
+    d.body(5,'#444444');d.wrap(((D.dsny||[]).length>1?'Split block: days shown are for '+(dsn.where||'part of it').replace(/^The /,'the ')+'. ':'')+'Contacts, poll site details, permits and 311 reports for this block, updated daily at sd26block.app'+(pfx==='bk'?'/block/':'/block/'+pfx+'/')+D.slug,W-M-(M+qrs+7)).slice(0,4).forEach(function(l,i){d.text(l,M+qrs+7,qy+20+i*5.6);});
     d.mono(4.2,MUTED);d.text('SEN. ANDREW GOUNARDES  \u00b7  DISTRICT 26  \u00b7  497 CARROLL ST, BROOKLYN',M,H-4);
     d.doc.save('fridge-card-'+D.slug+'.pdf');
   });

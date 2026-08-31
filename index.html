@@ -44,6 +44,11 @@ body{background:var(--off)}
 .res a.card{display:block;padding:14px 15px;border:2px solid var(--navy);border-radius:12px;text-decoration:none;background:#fff}
 .res a.card b{display:block;font-family:'DM Sans',sans-serif;font-size:1.02rem;font-weight:800;color:var(--navy);line-height:1.35}
 .res a.card em{display:block;font-style:normal;font-family:'DM Mono',monospace;font-size:.64rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:6px;font-weight:700}
+.res a.card em{display:block;font-style:normal;font-family:'DM Mono',monospace;font-size:.64rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:6px;font-weight:700}
+.splitwarn{margin-top:10px;background:#fff6e5;border:1px solid #e6c98a;border-left:4px solid var(--orange);border-radius:8px;padding:10px 12px;font-size:.82rem;line-height:1.5;color:#3a3320}
+.splitwarn b{color:var(--navy)}
+.splitwarn ul{margin:7px 0 0;padding-left:17px}
+.splitwarn li{margin:3px 0}
 .stat{display:flex;gap:0;border-bottom:1px solid var(--border);background:#fff}
 .stat div{flex:1;padding:14px 10px;text-align:center;border-right:1px solid var(--border)}
 .stat div:last-child{border-right:none}
@@ -102,6 +107,7 @@ body{background:var(--off)}
 <div class="res" id="res" style="display:none">
   <div class="rl">Closest block</div>
   <a class="card" id="resLink" href="#"><b id="resTitle"></b><em id="resSub"></em></a>
+  <div id="resSplit"></div>
 </div>
 
 <div class="nav">
@@ -145,12 +151,18 @@ function show(r){
   document.getElementById('resTitle').textContent=r.title;
   document.getElementById('resSub').textContent='Open the block card';
   document.getElementById('resLink').href='/block/'+r.slug+'/';
+  var sw=document.getElementById('resSplit');
+  if(r.split&&r.split.length>1){
+    sw.innerHTML='<div class="splitwarn"><b>Heads up: this block has '+r.split.length+' different collection schedules.</b> '+
+      'DSNY routes follow block faces, so not every building here is picked up on the same days.'+
+      '<ul>'+r.split.map(function(s){return '<li><b>'+esc(s.where||'Part of this block')+'</b>: trash '+esc(s.refuse)+'</li>';}).join('')+'</ul></div>';
+  } else { sw.innerHTML=''; }
   if(map){
     if(marker)map.removeLayer(marker);
     marker=L.circleMarker([r.mid[0],r.mid[1]],{radius:9,color:'#244190',weight:3,fillColor:'#fff',fillOpacity:1}).addTo(map);
     map.setView([r.mid[0],r.mid[1]],17);
   }
-  document.getElementById('res').scrollIntoView({behavior:'smooth',block:'nearest'});
+  var rs=document.getElementById('res');if(rs.scrollIntoView)rs.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function nearest(lat,lng){
