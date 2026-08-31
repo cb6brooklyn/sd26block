@@ -38,7 +38,7 @@ function render(D){
   if(D.byday.length){h+='<div class="byday">';D.byday.forEach(function(r){h+='<div class="bd"><b>'+esc(r[0])+'</b><span>'+esc(r[1].join(', '))+'</span></div>';});h+='</div>';}
   D.dsny.forEach(function(d,i){h+='<div class="pick">';
     [['dsny-trash','Trash',d.refuse,d.refuse_d],['dsny-recycle','Recycling',d.recycling,d.recycling_d],['dsny-compost','Compost',d.organics,d.organics_d],['dsny-truck','Bulk items',d.bulk,'']].forEach(function(t){h+='<div class="pk"><img src="/assets/blocks/'+t[0]+'.png" alt=""><i>'+t[1]+'</i><b>'+esc(t[2])+'</b>'+(t[3]?'<em>next '+esc(nextDay(t[3]))+'</em>':'')+'</div>';});
-    h+='</div><p class="muted">DSNY section '+esc(d.section)+'. Set out after 6 PM the evening before, or 8 PM in a bin. Bins are required for trash.'+(D.dsny.length>1&&i===0?' This block crosses two sanitation sections; the second schedule follows.':'')+'</p>';});
+    h+='</div><p class="muted">DSNY section '+esc(d.section)+(d.code?', schedule '+esc(d.code):'')+'. Set out after 6 PM the evening before, or 8 PM in a bin. Bins are required for trash.'+(D.dsny.length>1&&i===0?' This block is split between two collection schedules; the second follows.':'')+'</p>';});
   h+='</section>';
   // voting
   h+='<section class="card"><h2><img class="h2i" src="/site-icons/agencies/boe.png" alt="">Voting</h2>';
