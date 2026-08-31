@@ -3,7 +3,7 @@
 var D=window.BLOCK;if(!D)return;
 var pfx=(document.getElementById('card')||{}).getAttribute?document.getElementById('card').getAttribute('data-pfx')||'bk':'bk';
 var PAL={mn:['#0c549c','#8fb8e0','Manhattan'],bx:['#3054a8','#f06c0c','Bronx'],bk:['#003060','#f2c94c','Brooklyn'],qn:['#7a6636','#e8d9a8','Queens'],si:['#2f5a4c','#a6c4b8','Staten Island']};
-var C0=PAL[pfx][0],C1=PAL[pfx][1],BNM=PAL[pfx][2];
+var C0='#244190',C1='#c8a24a',BNM=PAL[pfx][2];
 var NAVY='#0d1b4b',ORANGE='#f47920',MUTED='#6b6760',CREAM='#f8f7f4',RED='#95262e';
 var ORD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],DNF=['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'],DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function load(src){return new Promise(function(res,rej){if(document.querySelector('script[src="'+src+'"]')){res();return;}var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
@@ -89,7 +89,7 @@ function assets(){
   return Promise.all([
     load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
     fetch('/assets/pdf-fonts.json').then(function(r){return r.json();}).catch(function(){return null;}),
-    img('/assets/blocks/sealtile-'+pfx+'.png'),
+    img('/sd26-logo-square.png'),
     img('/assets/blocks/asp-symbol.png'),
     Promise.all(['dsny-trash','dsny-recycle','dsny-compost','dsny-truck','lpc-seal','mailbox'].map(function(n){return img('/assets/blocks/'+n+'.png');})),
     Promise.all(['dcp','boe','bpl','nypl','qpl','311'].map(function(n){return img('/site-icons/agencies/'+n+'.png');})),
@@ -105,16 +105,17 @@ function buildFull(){
     var W=612,H=792,M=30,d=makeDoc(window.jspdf.jsPDF,fonts,W,H);
     var HB=108;
     d.rect(0,0,W,HB,C0);d.rect(0,HB,W,4,C1);
-    var sz=84,words=['MY',BNM.toUpperCase(),'BLOCK'];
+    var sz=84,words=['MY','SD26','BLOCK'];
     d.sans(14);var wmw=Math.max(d.w(words[0]),d.w(words[1]),d.w(words[2]));
     var sx=W-M-(sz+10+wmw);
-    d.img(seal,sx,(HB-sz)/2,sz,sz);
+    d.rect(sx,(HB-sz)/2,sz,sz,'#ffffff',null,null,7);
+    d.fit(seal,sx,(HB-sz)/2,sz,sz,5);
     d.sans(14,'#ffffff');words.forEach(function(w,i){d.text(w,sx+sz+10,(HB-3*16)/2+12+i*16);});
     var avail=sx-M-16,st=D.st,ts=32;d.sans(ts);while(d.w(st)>avail&&ts>14){ts-=1;d.sans(ts);}
     d.sans(ts,'#ffffff');d.text(st,M,42);
     var cross='between '+D.from+' and '+D.to,cs=15;d.sans(cs);while(d.w(cross)>avail&&cs>9){cs-=.5;d.sans(cs);}
     d.sans(cs,C1);var ly=42+ts*0.74;d.wrap(cross,avail).slice(0,2).forEach(function(l){d.text(l,M,ly);ly+=cs+3;});
-    d.mono(6.8,'#c9cfe0');d.text(d.wrap(BNM.toUpperCase()+' COMMUNITY BOARD '+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),avail)[0],M,Math.min(ly+12,HB-8));
+    d.mono(6.8,'#c9cfe0');d.text(d.wrap('STATE SENATE DISTRICT 26  \u00b7  '+BNM.toUpperCase()+' CB'+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),avail)[0],M,Math.min(ly+12,HB-8));
     var G=12,colW=(W-2*M-G)/2,colL=M,colR=M+colW+G,y=HB+16,rowH=132;
     var dsn=(D.dsny||[])[0]||{};
     var dt=[['Trash',dsn.refuse||'n/a',ic[0]],['Recycling',dsn.recycling||'n/a',ic[1]],['Compost',dsn.organics||'not on this route yet',ic[2]],['Bulk items',dsn.bulk||'none scheduled',ic[3]]];
@@ -190,13 +191,13 @@ function buildFridge(){
     var W=288,H=432,M=10,d=makeDoc(window.jspdf.jsPDF,fonts,W,H);
     var HB=58;
     d.rect(0,0,W,HB,C0);d.rect(0,HB,W,3,C1);
-    var sz=42;d.img(seal,W-M-sz,(HB-sz)/2,sz,sz);
+    var sz=46;d.rect(W-M-sz,(HB-sz)/2,sz,sz,'#ffffff',null,null,4);d.fit(seal,W-M-sz,(HB-sz)/2,sz,sz,3);
     var avail=W-2*M-sz-52,st=D.st,ts=19;d.sans(ts);while(d.w(st)>avail&&ts>10){ts-=1;d.sans(ts);}
     d.sans(ts,'#ffffff');d.text(st,M,24);
     var cross='between '+D.from+' and '+D.to,cs=9;d.sans(cs);while(d.w(cross)>avail&&cs>6.5){cs-=.5;d.sans(cs);}
     d.sans(cs,C1);d.text(d.wrap(cross,avail)[0],M,24+ts*0.78);
-    d.mono(5,'#c9cfe0');d.text(BNM.toUpperCase()+' CB'+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),M,HB-6);
-    d.sans(6,'#ffffff');['MY',BNM.toUpperCase(),'BLOCK'].forEach(function(w,i){d.text(w,W-M-sz-6,20+i*7,'right');});
+    d.mono(5,'#c9cfe0');d.text('SENATE DISTRICT 26  \u00b7  '+BNM.toUpperCase()+' CB'+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),M,HB-6);
+    d.sans(6,'#ffffff');['MY','SD26','BLOCK'].forEach(function(w,i){d.text(w,W-M-sz-6,20+i*7,'right');});
     var y=HB+9,cw=W-2*M;
     var sw=(cw-8)/3*0.92,ih=sw*376/573;
     var asp=(D.asp||[]).slice(0,2);
