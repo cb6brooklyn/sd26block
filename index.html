@@ -151,9 +151,23 @@ if(window.L&&document.getElementById('map')){
     L.marker([40.67704,-73.98556],{icon:L.divIcon({className:'',html:'<div style="width:44px;height:44px;background:#fff;border:2px solid #244190;border-radius:8px;box-shadow:0 1px 4px rgba(13,27,75,.3);overflow:hidden;transform:translate(-50%,-100%)"><img src="/sd26-logo-square.png" alt="Andrew Gounardes district office" style="width:100%;height:100%;object-fit:contain"></div>',iconSize:[0,0]})})
       .addTo(map).bindPopup('<b>Senator Andrew Gounardes</b><br>District Office<br>497 Carroll Street, Brooklyn, NY 11215');
   });
+  map.on('click',function(ev){
+    var lat=ev.latlng.lat,lng=ev.latlng.lng;
+    if(!IDX.length)return;
+    var n=nearest(lat,lng);
+    if(!n)return;
+    if(n.dist>900){
+      L.popup({closeButton:false,autoClose:true}).setLatLng(ev.latlng).setContent('That spot is outside Senate District 26.').openOn(map);
+      return;
+    }
+    if(marker)map.removeLayer(marker);
+    marker=L.circleMarker([lat,lng],{radius:9,color:'#244190',weight:3,fillColor:'#fff',fillOpacity:1}).addTo(map);
+    marker.bindPopup('<b>'+esc(n.r.title)+'</b><br><a href="/block/'+esc(n.r.slug)+'/">Open the block card</a>').openPopup();
+    fill(n.r);
+  });
 }
 
-function show(r){
+function fill(r){
   document.getElementById('res').style.display='block';
   document.getElementById('resTitle').textContent=r.title;
   document.getElementById('resSub').textContent='Open the block card';
@@ -164,12 +178,16 @@ function show(r){
       'DSNY routes follow block faces, so not every building here is picked up on the same days.'+
       '<ul>'+r.split.map(function(s){return '<li><b>'+esc(s.where||'Part of this block')+'</b>: trash '+esc(s.refuse)+'</li>';}).join('')+'</ul></div>';
   } else { sw.innerHTML=''; }
+  var rs=document.getElementById('res');if(rs.scrollIntoView)rs.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function show(r){
+  fill(r);
   if(map){
     if(marker)map.removeLayer(marker);
     marker=L.circleMarker([r.mid[0],r.mid[1]],{radius:9,color:'#244190',weight:3,fillColor:'#fff',fillOpacity:1}).addTo(map);
     map.setView([r.mid[0],r.mid[1]],17);
   }
-  var rs=document.getElementById('res');if(rs.scrollIntoView)rs.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function nearest(lat,lng){
