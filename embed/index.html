@@ -1,0 +1,106 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My SD26 Block &mdash; Embed</title><meta name="robots" content="noindex"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script async src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b6e9b47ba0cf416388d72db8edaf4198"}'></script>
+<style>
+:root{--navy:#0d1b4b;--blue:#244190;--bg:#f8f7f4;--border:#e5e2db}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--navy);display:flex;flex-direction:column}
+.hd{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border-bottom:2px solid var(--blue)}
+.hd img{height:30px;width:auto}
+.hd b{font-size:.98rem}
+.hd a{color:var(--navy);text-decoration:none;display:flex;align-items:center;gap:10px}
+.hd .mono{font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
+.sr{position:relative;padding:10px 12px 0}
+.sr input{width:100%;padding:11px 13px;border:2px solid var(--navy);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--navy);background:#fff}
+.sugg{position:absolute;left:12px;right:12px;top:100%;z-index:1000;background:#fff;border:2px solid var(--navy);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;display:none}
+.sugg button{display:block;width:100%;text-align:left;padding:10px 13px;border:none;border-bottom:1px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--navy);cursor:pointer}
+.sugg button:last-child{border-bottom:none}
+#map{flex:1;min-height:260px;margin:10px 12px 0;border:2px solid var(--navy);border-radius:12px}
+.res{display:none;margin:10px 12px}
+.res .rl{font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.res .card{display:block;background:#fff;border:2px solid var(--navy);border-radius:10px;padding:10px 13px;text-decoration:none;color:var(--navy)}
+.res .card b{display:block;font-size:.95rem}
+.res .card em{font-style:normal;font-size:.8rem;color:var(--blue)}
+.ft{font-size:.7rem;color:#6b6f80;padding:6px 12px 10px}
+.ft a{color:var(--blue)}
+</style></head><body>
+<div class="hd"><a href="https://sd26block.app/" target="_blank" rel="noopener"><img src="/sd26-logo.png" alt="Andrew Gounardes, New York State Senate"><span><b>My SD26 Block</b><br><span class="mono">Senate District 26</span></span></a></div>
+<div class="sr"><input id="addr" type="text" autocomplete="off" placeholder="Type an address, or tap the map to drop a pin"><div class="sugg" id="asugg"></div></div>
+<div id="map"></div>
+<div class="res" id="res"><div class="rl">Closest block</div><a class="card" id="resLink" href="#" target="_blank" rel="noopener"><b id="resTitle"></b><em>Open the block card</em></a></div>
+<div class="ft">Powered by <a href="https://sd26block.app/" target="_blank" rel="noopener">sd26block.app</a> &middot; Senator Andrew Gounardes, 497 Carroll Street, Brooklyn, NY</div>
+<script>
+(function(){
+'use strict';
+var IDX=[],map,marker;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function nearest(lat,lng){
+  var best=null,bd=1e9;
+  for(var i=0;i<IDX.length;i++){
+    var m=IDX[i].mid,dy=(m[0]-lat)*111320,dx=(m[1]-lng)*84500,d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=IDX[i];}
+  }
+  return best?{r:best,dist:Math.sqrt(bd)}:null;
+}
+function fill(r){
+  document.getElementById('res').style.display='block';
+  document.getElementById('resTitle').textContent=r.title;
+  document.getElementById('resLink').href='https://sd26block.app/block/'+r.slug+'/';
+}
+if(window.L&&document.getElementById('map')){
+  map=L.map('map',{scrollWheelZoom:false}).setView([40.657,-74.005],12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_2hyw_1_9cda1572a3817275ed412c0e',
+    {attribution:'&copy; OpenStreetMap contributors, &copy; CARTO',maxZoom:19}).addTo(map);
+  fetch('/data/sd26-boundary.json').then(function(r){return r.json();}).then(function(gj){
+    var bl=L.geoJSON(gj,{style:{color:'#244190',weight:3,fillColor:'#244190',fillOpacity:0.06}}).addTo(map);
+    map.fitBounds(bl.getBounds(),{padding:[14,14]});
+    L.marker([40.65635,-74.00716],{icon:L.divIcon({className:'',html:'<div style="font-family:\'DM Mono\',monospace;font-weight:700;font-size:12px;letter-spacing:.08em;color:#244190;text-shadow:0 0 3px #fff,0 0 6px #fff;white-space:nowrap;transform:translate(-50%,-50%)">SENATE DISTRICT 26</div>',iconSize:[0,0]}),interactive:false}).addTo(map);
+    L.marker([40.67704,-73.98556],{icon:L.divIcon({className:'',html:'<div style="width:40px;height:40px;background:#fff;border:2px solid #244190;border-radius:8px;box-shadow:0 1px 4px rgba(13,27,75,.3);overflow:hidden;transform:translate(-50%,-100%)"><img src="/sd26-logo-square.png" alt="Andrew Gounardes district office" style="width:100%;height:100%;object-fit:contain"></div>',iconSize:[0,0]})})
+      .addTo(map).bindPopup('<b>Senator Andrew Gounardes</b><br>District Office<br>497 Carroll Street, Brooklyn, NY 11215');
+  });
+  map.on('click',function(ev){
+    var lat=ev.latlng.lat,lng=ev.latlng.lng;
+    if(!IDX.length)return;
+    var n=nearest(lat,lng);
+    if(!n)return;
+    if(n.dist>900){
+      L.popup({closeButton:false,autoClose:true}).setLatLng(ev.latlng).setContent('That spot is outside Senate District 26.').openOn(map);
+      return;
+    }
+    if(marker)map.removeLayer(marker);
+    marker=L.circleMarker([lat,lng],{radius:9,color:'#244190',weight:3,fillColor:'#fff',fillOpacity:1}).addTo(map);
+    marker.bindPopup('<b>'+esc(n.r.title)+'</b><br><a href="https://sd26block.app/block/'+esc(n.r.slug)+'/" target="_blank" rel="noopener">Open the block card</a>').openPopup();
+    fill(n.r);
+  });
+}
+fetch('/data/sd26-index.json').then(function(r){return r.json();}).then(function(j){IDX=j;});
+var ai=document.getElementById('addr'),as=document.getElementById('asugg'),t=null;
+ai.addEventListener('input',function(){
+  clearTimeout(t);
+  var q=ai.value.trim();
+  if(q.length<3){as.style.display='none';return;}
+  t=setTimeout(function(){
+    fetch('https://geosearch.planninglabs.nyc/v2/autocomplete?text='+encodeURIComponent(q)+'&size=6')
+      .then(function(r){return r.json();}).then(function(j){
+        var f=(j.features||[]);
+        if(!f.length){as.style.display='none';return;}
+        as.innerHTML=f.map(function(x,i){return '<button type="button" data-i="'+i+'">'+esc(x.properties.label)+'</button>';}).join('');
+        as.style.display='block';
+        Array.prototype.forEach.call(as.querySelectorAll('button'),function(b){
+          b.addEventListener('click',function(){
+            var c=f[+b.getAttribute('data-i')].geometry.coordinates;
+            as.style.display='none';ai.value=b.textContent;
+            var n=nearest(c[1],c[0]);
+            if(!n)return;
+            if(n.dist>900){alert('That address does not appear to be in Senate District 26.');return;}
+            if(marker)map.removeLayer(marker);
+            marker=L.circleMarker([n.r.mid[0],n.r.mid[1]],{radius:9,color:'#244190',weight:3,fillColor:'#fff',fillOpacity:1}).addTo(map);
+            map.setView([n.r.mid[0],n.r.mid[1]],17);
+            fill(n.r);
+          });
+        });
+      }).catch(function(){as.style.display='none';});
+  },220);
+});
+})();
+</script>
+</body></html>
