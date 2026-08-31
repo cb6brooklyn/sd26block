@@ -5,6 +5,8 @@ var slug=root.getAttribute('data-slug'),cd=root.getAttribute('data-cd'),pfx=root
 var BNAMES={mn:'Manhattan',bx:'Bronx',bk:'Brooklyn',qn:'Queens',si:'Staten Island'};
 var BPATH=(pfx==='bk'?'/block/':'/block/'+pfx+'/');
 function xu(u){u=String(u||'');return (/^(https?:|mailto:|#)/.test(u)||u.indexOf('/block/')===0)?u:('https://bkcb6.app'+u);}
+var SUBCOL={'1':'#EE352E','2':'#EE352E','3':'#EE352E','4':'#00933C','5':'#00933C','6':'#00933C','7':'#B933AD','A':'#0039A6','C':'#0039A6','E':'#0039A6','B':'#FF6319','D':'#FF6319','F':'#FF6319','M':'#FF6319','G':'#6CBE45','J':'#996633','Z':'#996633','L':'#A7A9AC','N':'#FCCC0A','Q':'#FCCC0A','R':'#FCCC0A','W':'#FCCC0A','S':'#808183','SIR':'#0039A6','FX':'#FF6319','6X':'#00933C','7X':'#B933AD'};
+function bullets(rs){return (rs||[]).map(function(r){var bg=SUBCOL[r]||'#555';var fg=(bg==='#FCCC0A'||bg==='#A7A9AC')?'#000':'#fff';return '<span class="subb" style="background:'+bg+';color:'+fg+'">'+esc(r)+'</span>';}).join('');}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 var DAY={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6},DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function nextDay(daysTxt){var days=(daysTxt||'').split(/[,\/]/).map(function(x){return x.trim();}).filter(function(x){return DAY[x]!=null;});if(!days.length)return '';var t=new Date();t.setHours(0,0,0,0);
@@ -44,6 +46,15 @@ function render(D){
     h+='</div><p class="muted">'+(D.dsny.length>1&&d.where?'Applies to <b>'+esc(d.where.charAt(0).toLowerCase()+d.where.slice(1))+'</b>. ':'')+'DSNY section '+esc(d.section)+(d.code?', schedule '+esc(d.code):'')+'. Set out after 6 PM the evening before, or 8 PM in a bin. Bins are required for trash.'+(D.dsny.length>1?' If your building sits near the line between the two, confirm with 311.':'')+'</p>';});
   h+='</section>';
   // voting
+  if(D.subway&&D.subway.length){
+    h+='<section class="card"><h2>Nearest subway</h2>';
+    D.subway.forEach(function(t){
+      h+='<div class="subrow"><div class="subl">'+bullets(t.routes)+'</div>'+
+         '<div class="subm"><b>'+esc(t.name)+'</b><em>'+esc(t.line)+'</em></div>'+
+         '<div class="subd"><b>'+esc(t.min)+' min</b><em>'+esc(t.m)+' m'+(t.ada?' &middot; ADA':'')+'</em></div></div>';
+    });
+    h+='<p class="muted">Walking time estimated from the middle of this block at a steady pace. Station entrances vary, so the real walk can be shorter or longer. Routes shown are daytime service. ADA marks stations MTA lists as accessible.</p></section>';
+  }
   h+='<section class="card"><h2><img class="h2i" src="/site-icons/agencies/boe.png" alt="">Voting</h2>';
   h+='<div class="row"><div class="k">Next election</div><div class="v"><b>Tuesday, November 3, 2026</b><div class="sm">Early voting October 24 to November 1. Election Day polls open 6 AM to 9 PM.</div></div></div>';
   h+='<div class="row"><div class="k">On that ballot for this block</div><div class="v"><div class="sm">'+esc(D.ballot26.join('; '))+'. Plus statewide: Governor, Lieutenant Governor, Attorney General, State Comptroller.</div></div></div>';
