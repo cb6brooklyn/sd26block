@@ -7,3 +7,10 @@
   --border:#dfe3ee;
   --muted:#5f6880;
 }
+
+/* Site header bar carrying the Senate District 26 mark */
+.sdhead{background:#fff;border-bottom:3px solid var(--navy);padding:18px 16px 14px;text-align:center}
+.sdhead a{display:inline-block;text-decoration:none}
+.sdhead img{width:330px;max-width:86%;height:auto;display:block;margin:0 auto}
+.sdhead .sdsub{font-family:'DM Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:700;margin-top:10px}
+@media(max-width:420px){.sdhead img{width:280px}}
