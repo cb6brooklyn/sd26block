@@ -56,6 +56,10 @@ body{background:var(--off)}
 .stat i{display:block;font-style:normal;font-family:'DM Mono',monospace;font-size:.53rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-top:3px}
 .nav{display:flex;flex-wrap:wrap;gap:8px;padding:16px}
 .nav a{flex:1;min-width:150px;padding:13px;text-align:center;background:var(--navy);color:#fff;text-decoration:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700}
+.embp{margin:0 16px 16px;background:#fff;border:2px solid var(--navy);border-radius:12px;padding:14px 16px;font-size:.86rem;line-height:1.5}
+.embp pre{font-family:'DM Mono',monospace;font-size:.72rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin:10px 0;white-space:pre-wrap;word-break:break-all}
+.embp button{padding:10px 16px;background:#244190;color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer}
+.embp a{color:#244190}
 .foot{padding:16px;font-size:.76rem;line-height:1.6;color:var(--muted);border-top:1px solid var(--border)}
 .foot a{color:var(--navy)}
 </style>
@@ -113,6 +117,13 @@ body{background:var(--off)}
 <div class="nav">
   <a href="/block/">Browse all block cards</a>
   <a href="https://www.senatorgounardes.nyc/" target="_blank" rel="noopener">Senator Gounardes Website</a>
+  <a href="#" id="embBtn">Embed this map</a>
+</div>
+
+<div class="embp" id="embP" style="display:none">
+  <b>Put this block finder on your own site.</b> Copy the code below and paste it into any web page. <a href="/embed/" target="_blank" rel="noopener">Preview the embed</a>.
+  <pre id="embCode">&lt;iframe src="https://sd26block.app/embed/" width="100%" height="640" style="border:0;border-radius:12px" title="Find your SD26 block" loading="lazy"&gt;&lt;/iframe&gt;</pre>
+  <button type="button" id="embCopy">Copy code</button>
 </div>
 
 <div class="foot">
@@ -256,6 +267,24 @@ document.getElementById('locGo').addEventListener('click',function(){
     m.textContent='Found your block.';
     show(n.r);
   },function(){m.textContent='Location permission was declined.';},{enableHighAccuracy:true,timeout:10000});
+});
+
+document.getElementById('embBtn').addEventListener('click',function(e){
+  e.preventDefault();
+  var p=document.getElementById('embP');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block'&&p.scrollIntoView)p.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+document.getElementById('embCopy').addEventListener('click',function(){
+  var code=document.getElementById('embCode').textContent,btn=this;
+  function ok(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy code';},1600);}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(code).then(ok,function(){fallback();});}
+  else{fallback();}
+  function fallback(){
+    var ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');ok();}catch(err){}
+    document.body.removeChild(ta);
+  }
 });
 })();
 </script>
