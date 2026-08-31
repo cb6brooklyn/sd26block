@@ -1,0 +1,9 @@
+/* SD26 palette override, layered on top of cd-page.css */
+:root{
+  --navy:#244190;
+  --navy2:#1b3170;
+  --orange:#c8a24a;
+  --off:#f6f7fb;
+  --border:#dfe3ee;
+  --muted:#5f6880;
+}

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sd26block.app/sitemap.xml
