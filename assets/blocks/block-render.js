@@ -64,7 +64,7 @@ function render(D){
   h+='<p class="muted">Poll sites from the NYC Board of Elections. Confirm at <a href="https://findmypollsite.vote.nyc" target="_blank" rel="noopener">findmypollsite.vote.nyc</a>.</p></section>';
   // tiles
   h+='<section class="card"><h2>Who this block turns to</h2><div class="tiles">';
-  D.ents.forEach(function(e){h+='<a class="tile" href="'+esc(xu(e.url))+'" target="_blank" rel="noopener"><i>'+esc(e.k)+'</i><img src="'+esc(e.logo)+'" alt="" onerror="this.style.visibility=\'hidden\'"><b>'+esc(e.name)+'</b><em>'+e.lines.filter(Boolean).map(esc).join('<br>')+'</em></a>';});
+  D.ents.forEach(function(e){var kk=(/state senator/i.test(e.k)&&/Gounardes/.test(e.name||''))?'This block\u2019s state senator (you\u2019re on his site)':e.k;h+='<a class="tile" href="'+esc(xu(e.url))+'" target="_blank" rel="noopener"><i>'+esc(kk)+'</i><img src="'+esc(e.logo)+'" alt="" onerror="this.style.visibility=\'hidden\'"><b>'+esc(e.name)+'</b><em>'+e.lines.filter(Boolean).map(esc).join('<br>')+'</em></a>';});
   h+='</div></section>';
   h+='<section class="card"><a class="lb" href="https://portal.311.nyc.gov" target="_blank" rel="noopener"><img src="/site-icons/agencies/311.png" alt=""><span><i>Report it</i><b>Call 311</b><em>Noise, sanitation, street conditions, heat and hot water, and anything else the city handles.</em></span></a></section>';
   h+='<section class="card"><h2>Zoning</h2><div class="btns">';

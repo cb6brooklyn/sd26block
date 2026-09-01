@@ -186,7 +186,8 @@ function buildFull(){
     var rows=Math.ceil(ents.length/per),avail2=(H-100)-8-y,txth=34;
     var lsz=Math.min(tw2,(avail2-(rows-1)*gap)/rows-txth-11),th2=lsz+txth+11;
     ents.forEach(function(e,i){var x=M+(i%per)*(tw2+gap),yy=y+Math.floor(i/per)*(th2+gap);
-      d.mono(5.4,C0);d.text(d.wrap(e.k.toUpperCase(),tw2)[0],x+1,yy+7);
+      var kk=(/state senator/i.test(e.k)&&/Gounardes/.test(e.name||''))?'THIS BLOCK\u2019S STATE SENATOR (YOU\u2019RE ON HIS SITE)':e.k.toUpperCase();
+      var ks=5.4;d.mono(ks,C0);while(d.w(kk)>tw2&&ks>4){ks-=.2;d.mono(ks,C0);}d.text(kk,x+1,yy+7);
       d.rect(x,yy+11,tw2,lsz,'#ffffff','#d6d3d1',1,8);
       d.fit(logos[i],x,yy+11,tw2,lsz,5);
       var ty=yy+11+lsz+9;d.sans(7.6,NAVY);var nl=d.wrap(e.name,tw2);
