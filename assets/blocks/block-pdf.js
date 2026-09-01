@@ -114,7 +114,7 @@ function buildFull(){
     d.sans(14,'#ffffff');words.forEach(function(w,i){d.text(w,sx+sz+10,(HB-3*16)/2+12+i*16);});
     var avail=sx-M-16,st=D.st,ts=32;d.sans(ts);while(d.w(st)>avail&&ts>14){ts-=1;d.sans(ts);}
     d.sans(ts,'#ffffff');d.text(st,M,42);
-    var cross='between '+D.from+' and '+D.to,cs=15;d.sans(cs);while(d.w(cross)>avail&&cs>9){cs-=.5;d.sans(cs);}
+    var cross='between '+D.from+' and '+D.to,cs=15;d.sans(cs);while(d.wrap(cross,avail).length>2&&cs>7){cs-=.5;d.sans(cs);}
     d.sans(cs,C1);var ly=42+ts*0.74;d.wrap(cross,avail).slice(0,2).forEach(function(l){d.text(l,M,ly);ly+=cs+3;});
     d.mono(6.8,'#c9cfe0');d.text(d.wrap('STATE SENATE DISTRICT 26  \u00b7  '+BNM.toUpperCase()+' CB'+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),avail)[0],M,Math.min(ly+12,HB-8));
     var G=12,colW=(W-2*M-G)/2,colL=M,colR=M+colW+G,y=HB+16,rowH=132;
@@ -126,24 +126,27 @@ function buildFull(){
       d.rect(x,yy,gw,gh,'#ffffff','#e5e2db',.8,4);
       var isz=48;d.fit(t[2],x+8,yy+(gh-isz)/2,isz,isz);
       var tx=x+isz+15;d.mono(7,MUTED);d.text(t[0].toUpperCase()+(SPLITLAB?'  \u00b7  '+SPLITLAB:''),tx,yy+20);
-      var vl=d.wrap(t[1],gw-isz-22),fs=vl.length>2?9.5:(vl.length>1?11.5:13.5);
-      d.sans(fs,NAVY);d.wrap(t[1],gw-isz-22).slice(0,3).forEach(function(l,j){d.text(l,tx,yy+36+j*(fs+2));});});
-    var sw=(colW-4)/2,aspAll=D.asp||[],sides=[],bySide={};
-    aspAll.forEach(function(a){if(!bySide[a.side]){bySide[a.side]={side:a.side,first:a,extra:[]};sides.push(a.side);}else bySide[a.side].extra.push(a);});
-    var groups=sides.map(function(s){return bySide[s];}),over=groups.length>2?groups.slice(2):[];groups=groups.slice(0,2);
-    if(groups.length){
-      if(groups.length===1&&!groups[0].extra.length){var pr={'North side':'South side','South side':'North side','East side':'West side','West side':'East side'};groups=groups.concat([{missing:true,side:pr[groups[0].side]||'Other side'}]);}
-      groups.forEach(function(g,i){var x=colR+i*(sw+4);d.rect(x,y,sw,rowH,'#ffffff','#e5e2db',.8,4);
+      var vw=gw-isz-22,fs=13.5;d.sans(fs,NAVY);
+      function longw(){var mx=0;String(t[1]).split(/\s+/).forEach(function(wd){var ww=d.w(wd);if(ww>mx)mx=ww;});return mx;}
+      while((d.wrap(t[1],vw).length>3||longw()>vw)&&fs>7){fs-=.5;d.sans(fs,NAVY);}
+      d.wrap(t[1],vw).slice(0,3).forEach(function(l,j){d.text(l,tx,yy+36+j*(fs+2));});});
+    var sw=(colW-4)/2,bySide={},sideOrder=[];
+    (D.asp||[]).forEach(function(a){if(!bySide[a.side]){bySide[a.side]=[];sideOrder.push(a.side);}bySide[a.side].push(a);});
+    var asp=sideOrder.map(function(s){return {side:s,main:bySide[s][0],extra:bySide[s].slice(1)};});
+    if(asp.length){
+      if(asp.length===1){var pr={'North side':'South side','South side':'North side','East side':'West side','West side':'East side'};asp=asp.concat([{missing:true,side:pr[asp[0].side]||'Other side'}]);}
+      asp.forEach(function(a,i){var x=colR+i*(sw+4);d.rect(x,y,sw,rowH,'#ffffff','#e5e2db',.8,4);
         var iw=sw-12,ih=iw*376/573;
-        if(g.missing){d.rect(x+6,y+6,iw,ih,null,'#c9c5bc',1.2,3);d.mono(6,MUTED);d.text(g.side.toUpperCase(),x+6+iw/2,y+6+ih*0.4,'center');
+        if(a.missing){d.rect(x+6,y+6,iw,ih,null,'#c9c5bc',1.2,3);d.mono(6,MUTED);d.text(a.side.toUpperCase(),x+6+iw/2,y+6+ih*0.4,'center');
           d.body(6.8,'#444444');d.wrap('No alternate side rule on file for this side. Check the posted signs.',iw-8).forEach(function(l,j){d.text(l,x+6+iw/2,y+6+ih*0.58+j*8,'center');});
-          d.mono(6.5,MUTED);d.text(('Alternate side, '+g.side).toUpperCase(),x+6,y+ih+18);return;}
-        var a=g.first;
-        sign(d,x+6,y+6,iw,a,sym);d.mono(6.5,MUTED);d.text(('Alternate side, '+g.side).toUpperCase(),x+6,y+ih+18);
-        d.body(6.8,'#444444');
-        var note=g.extra.length?('also '+g.extra[0].sched+(g.extra.length>1?' +'+(g.extra.length-1)+' more':'')):('next '+nextOf(a.days));
-        if(i===1&&over.length)note+=' \u00b7 more rules on the web card';
-        d.text(d.wrap(note,sw-12)[0],x+6,y+ih+27);});
+          d.mono(6.5,MUTED);d.text(('Alternate side, '+a.side).toUpperCase(),x+6,y+ih+18);return;}
+        sign(d,x+6,y+6,iw,a.main,sym);d.mono(6.5,MUTED);d.text(('Alternate side, '+a.side).toUpperCase(),x+6,y+ih+18);
+        d.body(6.8,'#444444');d.text('next '+nextOf(a.main.days),x+6,y+ih+27);
+        a.extra.slice(0,2).forEach(function(e2,j){
+          var m2=(e2.sched||'').match(/^(.*),\s*(.*)$/);
+          var t2='also '+(compactDays(e2.days)||(m2?m2[1]:'').toUpperCase())+' '+(m2?m2[2]:'').replace(/\s+to\s+/,'-').replace(/ (AM|PM)/g,'$1');
+          d.body(6.4,'#8b1a1a');d.text(d.wrap(t2,sw-12)[0],x+6,y+ih+36+j*8);});
+        if(a.extra.length>2){d.body(6.4,'#8b1a1a');d.text('+'+(a.extra.length-2)+' more on the web card',x+6,y+ih+52);}});
     } else {d.rect(colR,y,colW,rowH,'#ffffff','#e5e2db',.8,4);d.mono(6.5,MUTED);d.text('ALTERNATE SIDE PARKING',colR+9,y+16);d.sans(10,NAVY);d.text('No rules on file for this block',colR+9,y+34);}
     y+=rowH+G;
     var mh=112;drawMap(d,colL,y,colW,mh,false);
@@ -153,28 +156,34 @@ function buildFull(){
       var isz=h-10;d.fit(im,x+5,yy+5,isz,isz,1);
       var tx=x+isz+10,tw=w-isz-15;
       d.mono(5.4,MUTED);d.text(d.wrap(k.toUpperCase(),tw)[0],tx,yy+10);
-      d.sans(8.4,col);d.text(d.wrap(v,tw)[0],tx,yy+21);
+      var vs=8.4;d.sans(vs,col);while(d.w(v)>tw&&vs>5.8){vs-=.2;d.sans(vs,col);}d.text(v,tx,yy+21);
       if(s2){d.body(6.2,'#444444');d.wrap(s2,tw).slice(0,2).forEach(function(l,j){d.text(l,tx,yy+30+j*7.5);});}
     }
-    fact(colR,ry,fw,fh,'Zoning',(D.zones||[]).join(' \u00b7 ')||'Not on file','',ag[0],C0);
-    if((D.hist||[]).length)fact(colR+fw+4,ry,fw,fh,'Historic district, '+((D.hist_side||[])[0]||''),D.hist[0].replace(' Historic District',''),'Exterior work needs an LPC permit',ic[4],'#8b1a1a');
-    else fact(colR+fw+4,ry,fw,fh,'Report a problem','Call 311','Noise, sanitation, streets, heat',ag[5],C0);
+    if((D.hist||[]).length){
+      fact(colR,ry,fw,fh,'Report a problem','Call 311','Noise, sanitation, streets, heat',ag[5],C0);
+      fact(colR+fw+4,ry,fw,fh,'Historic district, '+((D.hist_side||[])[0]||''),D.hist[0].replace(' Historic District',''),'Exterior work needs an LPC permit',ic[4],'#8b1a1a');
+    } else {
+      fact(colR,ry,colW,fh,'Report a problem','Call 311','Noise, sanitation, streets, heat and hot water',ag[5],C0);
+    }
     ry+=fh+4;
     var mb=D.mail,lb=D.lib;
     fact(colR,ry,fw,fh,'Closest mail box',mb?mb.addr:'None found',mb?((mb.m<=40?'On this block. ':(mb.m+' m away. '))+(mb.times?'Pickup '+mb.times:'')):'',ic[5],C0);
     fact(colR+fw+4,ry,fw,fh,'Closest library',lb?lb.name:'None found',lb?(lb.addr.split(',')[0]+' \u00b7 '+lb.phone):'',libIcon(ag,lb),C0);
     ry+=fh+4;
     var e0=(D.eds||[])[0];
-    d.rect(colR,ry,colW,46,'#ffffff',C0,1.2,5);
+    d.rect(colR,ry,colW,62,'#ffffff',C0,1.2,5);
     d.fit(ag[1],colR+5,ry+8,30,30,1);
     d.mono(5.4,MUTED);d.text('VOTE TUESDAY, NOVEMBER 3, 2026',colR+42,ry+12);
-    if(e0&&e0.site){d.sans(6.6,C0);d.text('ELECTION DAY',colR+42,ry+24);var w1=d.w('ELECTION DAY')+8;d.sans(8.4,NAVY);d.text(d.wrap(e0.site[0],(colW-52-w1)*0.6)[0],colR+42+w1,ry+24);
-      d.body(6,'#555555');d.text(d.wrap(stripCity(e0.site[1]),colW-52)[0],colR+42,ry+33);}
-    if(e0&&e0.early){d.sans(6.6,'#8b1a1a');d.text('EARLY VOTING',colR+42,ry+42);var w2=d.w('EARLY VOTING')+8;d.sans(8.4,NAVY);d.text(d.wrap(e0.early[0],(colW-52-w2)*0.75)[0],colR+42+w2,ry+42);}
-    ry+=50;
+    if(e0){d.sans(6.6,C0);d.text('ELECTION DISTRICT',colR+42,ry+22);var w0=d.w('ELECTION DISTRICT')+8;
+      d.sans(8.4,NAVY);d.text('AD '+e0.ad+' \u00b7 ED '+e0.ed+((D.eds||[]).length>1?' (+'+((D.eds||[]).length-1)+' more)':''),colR+42+w0,ry+22);
+      d.body(6,'#555555');d.text('The table you go to inside your poll site on Election Day.',colR+42,ry+30);}
+    if(e0&&e0.site){d.sans(6.6,C0);d.text('ELECTION DAY',colR+42,ry+40);var w1=d.w('ELECTION DAY')+8;var pw=colW-52-w1,ps=8.4;d.sans(ps,NAVY);while(d.w(e0.site[0])>pw&&ps>5.6){ps-=.2;d.sans(ps,NAVY);}d.text(e0.site[0],colR+42+w1,ry+40);
+      d.body(6,'#555555');d.text(d.wrap(stripCity(e0.site[1]),colW-52)[0],colR+42,ry+48);}
+    if(e0&&e0.early){d.sans(6.6,'#8b1a1a');d.text('EARLY VOTING',colR+42,ry+57);var w2=d.w('EARLY VOTING')+8;var ew=colW-52-w2,es=8.4;d.sans(es,NAVY);while(d.w(e0.early[0])>ew&&es>5.6){es-=.2;d.sans(es,NAVY);}d.text(e0.early[0],colR+42+w2,ry+57);}
+    ry+=66;
     y+=Math.max(mh,ry-y)+G;
     var ents=D.ents||[],per=4,gap=8,tw2=(W-2*M-(per-1)*gap)/per;
-    var rows=Math.ceil(ents.length/per),avail2=(H-92)-8-y,txth=34;
+    var rows=Math.ceil(ents.length/per),avail2=(H-100)-8-y,txth=34;
     var lsz=Math.min(tw2,(avail2-(rows-1)*gap)/rows-txth-11),th2=lsz+txth+11;
     ents.forEach(function(e,i){var x=M+(i%per)*(tw2+gap),yy=y+Math.floor(i/per)*(th2+gap);
       d.mono(5.4,C0);d.text(d.wrap(e.k.toUpperCase(),tw2)[0],x+1,yy+7);
@@ -183,11 +192,12 @@ function buildFull(){
       var ty=yy+11+lsz+9;d.sans(7.6,NAVY);var nl=d.wrap(e.name,tw2);
       d.text(nl[0],x+1,ty);ty+=8;if(nl[1]){d.text(nl[1],x+1,ty);ty+=8;}
       d.body(5.7,'#444444');(e.lines||[]).filter(Boolean).forEach(function(l){var w=d.wrap(l,tw2)[0];if(ty<yy+th2+2){d.text(w,x+1,ty);ty+=6.6;}});});
-    var fy=H-92;d.rect(0,fy,W,92,CREAM);d.rect(0,fy,W,3,C1);d.rect(0,fy+3,W,1.2,C0);
+    var fy=H-100;d.rect(0,fy,W,100,CREAM);d.rect(0,fy,W,3,C1);d.rect(0,fy+3,W,1.2,C0);
     d.img(qr,M,fy+11,70,70);
     d.sans(11,C0);d.text('Scan for the live version of this card',M+82,fy+28);
-    d.mono(8,C0);d.text('sd26block.app/block/'+D.slug+'/',M+82,fy+42);
-    d.body(7.5,'#444444');d.wrap(((D.dsny||[]).length>1?'This block is split between '+D.dsny.length+' collection schedules; the days above are for '+(dsn.where||'part of the block').replace(/^The /,'the ')+'. See the web card for the others. ':'')+'Next dates, suspensions and permits update live on the web card. Sources: DOT street centerline and parking signs, DSNY collection frequencies, NYC Board of Elections poll sites, PLUTO zoning, USPS collection boxes, NYC district boundary files. Confirm alternate side suspensions on 311.',W-M-(M+82)).forEach(function(l,i){d.text(l,M+82,fy+56+i*9);});
+    var uurl='sd26block.app/block/'+D.slug+'/',us=8;d.mono(us,C0);while(d.w(uurl)>(W-M-(M+82))&&us>4.6){us-=.2;d.mono(us,C0);}d.text(uurl,M+82,fy+42);
+    d.mono(7,MUTED);d.text('ZONED',M+82,fy+54);d.sans(9,NAVY);d.text((D.zones||[]).join(' \u00b7 ')||'No zoning district on file',M+82+d.w('ZONED ')+14,fy+54);
+    d.body(7.5,'#444444');d.wrap(((D.dsny||[]).length>1?'This block is split between '+D.dsny.length+' collection schedules; the days above are for '+(dsn.where||'part of the block').replace(/^The /,'the ')+'. See the web card for the others. ':'')+'Next dates, suspensions and permits update live on the web card. Sources: DOT street centerline and parking signs, DSNY collection frequencies, NYC Board of Elections poll sites, PLUTO zoning, USPS collection boxes, NYC district boundary files. Confirm alternate side suspensions on 311.',W-M-(M+82)).forEach(function(l,i){d.text(l,M+82,fy+66+i*9);});
     d.mono(6.5,MUTED);d.text('STATE SENATOR ANDREW GOUNARDES  \u00b7  DISTRICT 26  \u00b7  497 CARROLL ST, BROOKLYN  \u00b7  (718) 238-6044  \u00b7  GENERATED '+new Date().toISOString().slice(0,10),M,H-8);
     d.doc.save('block-card-'+D.slug+'.pdf');
   });
@@ -200,22 +210,27 @@ function buildFridge(){
     var HB=58;
     d.rect(0,0,W,HB,C0);d.rect(0,HB,W,3,C1);
     var sz=46;d.rect(W-M-sz,(HB-sz)/2,sz,sz,'#ffffff',null,null,4);d.fit(seal,W-M-sz,(HB-sz)/2,sz,sz,3);
-    var avail=W-2*M-sz-52,st=D.st,ts=19;d.sans(ts);while(d.w(st)>avail&&ts>10){ts-=1;d.sans(ts);}
+    var avail=W-2*M-sz-52,st=D.st,ts=19;d.sans(ts);while(d.w(st)>avail&&ts>7){ts-=.5;d.sans(ts);}
     d.sans(ts,'#ffffff');d.text(st,M,24);
-    var cross='between '+D.from+' and '+D.to,cs=9;d.sans(cs);while(d.w(cross)>avail&&cs>6.5){cs-=.5;d.sans(cs);}
-    d.sans(cs,C1);d.text(d.wrap(cross,avail)[0],M,24+ts*0.78);
-    d.mono(5,'#c9cfe0');d.text('SENATE DISTRICT 26  \u00b7  '+BNM.toUpperCase()+' CB'+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),M,HB-6);
+    var cross='between '+D.from+' and '+D.to,cs=9;d.sans(cs);while(d.wrap(cross,avail).length>2&&cs>5.5){cs-=.5;d.sans(cs);}
+    var cls=d.wrap(cross,avail).slice(0,2),two=cls.length>1;
+    if(two&&cs>6){cs=6;d.sans(cs);cls=d.wrap(cross,avail).slice(0,2);}
+    d.sans(cs,C1);cls.forEach(function(l,i){d.text(l,M,24+ts*(two?0.62:0.78)+i*(cs+1.5));});
+    d.mono(5,'#c9cfe0');d.text('SENATE DISTRICT 26  \u00b7  '+BNM.toUpperCase()+' CB'+(D.cd%100)+(D.hn?'  \u00b7  '+D.hn.toUpperCase():''),M,two?HB-2.5:HB-6);
     d.sans(6,'#ffffff');['MY','SD26','BLOCK'].forEach(function(w,i){d.text(w,W-M-sz-6,20+i*7,'right');});
     var y=HB+9,cw=W-2*M;
     var sw=(cw-8)/3*0.92,ih=sw*376/573;
-    var asp=(D.asp||[]).slice(0,2);
+    var bySide={},sideOrder=[];
+    (D.asp||[]).forEach(function(a){if(!bySide[a.side]){bySide[a.side]=[];sideOrder.push(a.side);}bySide[a.side].push(a);});
+    var asp=sideOrder.map(function(s){return {side:s,main:bySide[s][0],extra:bySide[s].slice(1)};});
+    var hasExtra=asp.some(function(a){return a.extra&&a.extra.length;});
     if(asp.length){
       if(asp.length===1){var pr={'North side':'South side','South side':'North side','East side':'West side','West side':'East side'};asp=asp.concat([{missing:true,side:pr[asp[0].side]||'Other side'}]);}
       asp.forEach(function(a,i){var x=M+i*(sw+4);
         if(a.missing){d.rect(x,y,sw,ih,null,'#c9c5bc',1,3);d.mono(4.6,MUTED);d.text(a.side.toUpperCase(),x+sw/2,y+ih*0.42,'center');
           d.body(4.6,'#444444');d.wrap('No rule on file. Check signs.',sw-6).forEach(function(l,j){d.text(l,x+sw/2,y+ih*0.62+j*6,'center');});}
-        else sign(d,x,y,sw,a,sym);
-        d.body(5,'#333333');d.text(d.wrap(a.side+(a.missing?'':' \u00b7 next '+nextOf(a.days)),sw)[0],x+1,y+ih+7);});
+        else sign(d,x,y,sw,a.main,sym);
+        d.body(5,'#333333');d.text(d.wrap(a.side+(a.missing?'':(a.extra&&a.extra.length?' \u00b7 +'+a.extra.length+' more':' \u00b7 next '+nextOf(a.main.days))),sw)[0],x+1,y+ih+7);});
     } else {d.rect(M,y,2*sw+4,ih,'#ffffff','#e5e2db',.8,4);d.mono(4.8,MUTED);d.text('ALTERNATE SIDE PARKING',M+6,y+13);d.sans(8,NAVY);d.wrap('No rules on file for this block',2*sw-8).slice(0,2).forEach(function(l,j){d.text(l,M+6,y+26+j*10);});}
     drawMap(d,M+2*(sw+4),y,cw-2*(sw+4),ih,true);
     y+=ih+13;
@@ -241,20 +256,22 @@ function buildFridge(){
     fact(M,y,fw,'Closest mail box',mb?mb.addr:'None',mb?(mb.m<=40?'on this block':(mb.m+' m away')):'',ic[5]);
     fact(M+fw+5,y,fw,'Closest library',lb?lb.name:'None',lb?lb.phone:'',libIcon(ag,lb));
     y+=fh+4;
-    var e0=(D.eds||[])[0],vh=44;
+    var e0=(D.eds||[])[0],vh=54;
     d.rect(M,y,cw,vh,'#ffffff',C0,1,4);
     d.fit(ag[1],M+5,y+(vh-24)/2,24,24,1);
     var tx0=M+34,tw0=cw-38;
     d.mono(4.6,MUTED);d.text('VOTE TUESDAY, NOVEMBER 3, 2026',tx0,y+9);
-    d.rect(tx0,y+13,3,11,C0);d.sans(6,C0);d.text('ELECTION DAY',tx0+7,y+18);
+    if(e0){var edt='AD '+e0.ad+' \u00b7 ED '+e0.ed;d.sans(6.4,NAVY);d.text(edt,tx0,y+18);var edw=d.w(edt);
+      d.body(4.6,'#555555');d.text('\u2014 the table you go to at your poll site',tx0+edw+5,y+18);}
+    d.rect(tx0,y+23,3,11,C0);d.sans(6,C0);d.text('ELECTION DAY',tx0+7,y+28);
     var dlw=d.w('ELECTION DAY')+13;
-    d.sans(8,NAVY);var nm=d.wrap(e0&&e0.site?e0.site[0]:'See BOE',(tw0-dlw)*0.42)[0];d.text(nm,tx0+dlw,y+21);var nw=d.w(nm);
-    if(e0&&e0.site){d.body(5.2,'#555555');d.text(d.wrap(stripCity(e0.site[1]),tw0-dlw-nw-8)[0],tx0+dlw+nw+8,y+21);}
-    d.rect(tx0,y+27,3,11,'#8b1a1a');d.sans(6,'#8b1a1a');d.text('EARLY VOTING',tx0+7,y+32);
-    d.mono(4.4,'#8b1a1a');d.text('OCT 24 - NOV 1',tx0+7,y+38.5);
+    d.sans(8,NAVY);var nm=d.wrap(e0&&e0.site?e0.site[0]:'See BOE',(tw0-dlw)*0.42)[0];d.text(nm,tx0+dlw,y+31);var nw=d.w(nm);
+    if(e0&&e0.site){d.body(5.2,'#555555');d.text(d.wrap(stripCity(e0.site[1]),tw0-dlw-nw-8)[0],tx0+dlw+nw+8,y+31);}
+    d.rect(tx0,y+37,3,11,'#8b1a1a');d.sans(6,'#8b1a1a');d.text('EARLY VOTING',tx0+7,y+42);
+    d.mono(4.4,'#8b1a1a');d.text('OCT 24 - NOV 1',tx0+7,y+48.5);
     var elw=Math.max(d.w('OCT 24 - NOV 1'),0)+17;
-    d.sans(8,NAVY);var evn=d.wrap(e0&&e0.early?e0.early[0]:'see BOE',(tw0-elw)*0.55)[0];d.text(evn,tx0+elw,y+35);var ew=d.w(evn);
-    if(e0&&e0.early){d.body(5.2,'#555555');d.text(d.wrap(stripCity(e0.early[1]),tw0-elw-ew-8)[0],tx0+elw+ew+8,y+35);}
+    d.sans(8,NAVY);var evn=d.wrap(e0&&e0.early?e0.early[0]:'see BOE',(tw0-elw)*0.55)[0];d.text(evn,tx0+elw,y+45);var ew=d.w(evn);
+    if(e0&&e0.early){d.body(5.2,'#555555');d.text(d.wrap(stripCity(e0.early[1]),tw0-elw-ew-8)[0],tx0+elw+ew+8,y+45);}
     y+=vh+6;
     var ents=(D.ents||[]).slice(0,8),per=4,gap=4,tw=(cw-(per-1)*gap)/per,qrs=42,bottom=H-M-qrs-14;
     var rows=Math.ceil(ents.length/per),lsz=Math.min(tw,(bottom-y-rows*8)/rows);
@@ -267,7 +284,7 @@ function buildFridge(){
     d.rect(0,qy-4,W,H-(qy-4),CREAM);d.rect(0,qy-4,W,1.5,C1);
     d.img(qr,M,qy,qrs,qrs);
     d.sans(7.5,C0);d.text('Scan for the live card',M+qrs+7,qy+11);
-    d.body(5,'#444444');d.wrap(((D.dsny||[]).length>1?'Split block: days shown are for '+(dsn.where||'part of it').replace(/^The /,'the ')+'. ':'')+'Contacts, poll site details, permits and 311 reports for this block, updated daily at sd26block.app'+(pfx==='bk'?'/block/':'/block/'+pfx+'/')+D.slug,W-M-(M+qrs+7)).slice(0,4).forEach(function(l,i){d.text(l,M+qrs+7,qy+20+i*5.6);});
+    d.body(5,'#444444');d.wrap(((D.dsny||[]).length>1?'Split block: days shown are for '+(dsn.where||'part of it').replace(/^The /,'the ')+'. ':'')+(hasExtra?'Some sides have more than one posted schedule; all are on the web card. ':'')+'Contacts, poll site details, permits and 311 reports for this block, updated daily at sd26block.app'+(pfx==='bk'?'/block/':'/block/'+pfx+'/')+D.slug,W-M-(M+qrs+7)).slice(0,4).forEach(function(l,i){d.text(l,M+qrs+7,qy+20+i*5.6);});
     d.mono(4.2,MUTED);d.text('SEN. ANDREW GOUNARDES  \u00b7  DISTRICT 26  \u00b7  497 CARROLL ST, BROOKLYN',M,H-4);
     d.doc.save('fridge-card-'+D.slug+'.pdf');
   });
