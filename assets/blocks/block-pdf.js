@@ -128,16 +128,22 @@ function buildFull(){
       var tx=x+isz+15;d.mono(7,MUTED);d.text(t[0].toUpperCase()+(SPLITLAB?'  \u00b7  '+SPLITLAB:''),tx,yy+20);
       var vl=d.wrap(t[1],gw-isz-22),fs=vl.length>2?9.5:(vl.length>1?11.5:13.5);
       d.sans(fs,NAVY);d.wrap(t[1],gw-isz-22).slice(0,3).forEach(function(l,j){d.text(l,tx,yy+36+j*(fs+2));});});
-    var sw=(colW-4)/2,asp=(D.asp||[]).slice(0,2);
-    if(asp.length){
-      if(asp.length===1){var pr={'North side':'South side','South side':'North side','East side':'West side','West side':'East side'};asp=asp.concat([{missing:true,side:pr[asp[0].side]||'Other side'}]);}
-      asp.forEach(function(a,i){var x=colR+i*(sw+4);d.rect(x,y,sw,rowH,'#ffffff','#e5e2db',.8,4);
+    var sw=(colW-4)/2,aspAll=D.asp||[],sides=[],bySide={};
+    aspAll.forEach(function(a){if(!bySide[a.side]){bySide[a.side]={side:a.side,first:a,extra:[]};sides.push(a.side);}else bySide[a.side].extra.push(a);});
+    var groups=sides.map(function(s){return bySide[s];}),over=groups.length>2?groups.slice(2):[];groups=groups.slice(0,2);
+    if(groups.length){
+      if(groups.length===1&&!groups[0].extra.length){var pr={'North side':'South side','South side':'North side','East side':'West side','West side':'East side'};groups=groups.concat([{missing:true,side:pr[groups[0].side]||'Other side'}]);}
+      groups.forEach(function(g,i){var x=colR+i*(sw+4);d.rect(x,y,sw,rowH,'#ffffff','#e5e2db',.8,4);
         var iw=sw-12,ih=iw*376/573;
-        if(a.missing){d.rect(x+6,y+6,iw,ih,null,'#c9c5bc',1.2,3);d.mono(6,MUTED);d.text(a.side.toUpperCase(),x+6+iw/2,y+6+ih*0.4,'center');
+        if(g.missing){d.rect(x+6,y+6,iw,ih,null,'#c9c5bc',1.2,3);d.mono(6,MUTED);d.text(g.side.toUpperCase(),x+6+iw/2,y+6+ih*0.4,'center');
           d.body(6.8,'#444444');d.wrap('No alternate side rule on file for this side. Check the posted signs.',iw-8).forEach(function(l,j){d.text(l,x+6+iw/2,y+6+ih*0.58+j*8,'center');});
-          d.mono(6.5,MUTED);d.text(('Alternate side, '+a.side).toUpperCase(),x+6,y+ih+18);return;}
-        sign(d,x+6,y+6,iw,a,sym);d.mono(6.5,MUTED);d.text(('Alternate side, '+a.side).toUpperCase(),x+6,y+ih+18);
-        d.body(6.8,'#444444');d.text('next '+nextOf(a.days),x+6,y+ih+27);});
+          d.mono(6.5,MUTED);d.text(('Alternate side, '+g.side).toUpperCase(),x+6,y+ih+18);return;}
+        var a=g.first;
+        sign(d,x+6,y+6,iw,a,sym);d.mono(6.5,MUTED);d.text(('Alternate side, '+g.side).toUpperCase(),x+6,y+ih+18);
+        d.body(6.8,'#444444');
+        var note=g.extra.length?('also '+g.extra[0].sched+(g.extra.length>1?' +'+(g.extra.length-1)+' more':'')):('next '+nextOf(a.days));
+        if(i===1&&over.length)note+=' \u00b7 more rules on the web card';
+        d.text(d.wrap(note,sw-12)[0],x+6,y+ih+27);});
     } else {d.rect(colR,y,colW,rowH,'#ffffff','#e5e2db',.8,4);d.mono(6.5,MUTED);d.text('ALTERNATE SIDE PARKING',colR+9,y+16);d.sans(10,NAVY);d.text('No rules on file for this block',colR+9,y+34);}
     y+=rowH+G;
     var mh=112;drawMap(d,colL,y,colW,mh,false);
