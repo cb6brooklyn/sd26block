@@ -205,18 +205,30 @@ function show(r){
   }
 }
 
-function norm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
-function nearest(lat,lng,street){
-  var best=null,bd=1e9,pool=IDX;
+function norm(s){return String(s||'').toLowerCase().replace(/(\d)(st|nd|rd|th)\b/g,'$1').replace(/[^a-z0-9]+/g,' ').trim();}
+function segDist(lat,lng,a,b){
+  var ay=(a[0]-lat)*111320,ax=(a[1]-lng)*84500,by=(b[0]-lat)*111320,bx=(b[1]-lng)*84500;
+  var vx=bx-ax,vy=by-ay,L=vx*vx+vy*vy,t=L?Math.max(0,Math.min(1,-(ax*vx+ay*vy)/L)):0;
+  var px=ax+t*vx,py=ay+t*vy;return px*px+py*py;
+}
+function blockDist(r,lat,lng){
+  var best=1e18;
+  if(r.ln&&r.ln.length){for(var s=0;s<r.ln.length;s++){var seg=r.ln[s];for(var i=1;i<seg.length;i++){var d=segDist(lat,lng,seg[i-1],seg[i]);if(d<best)best=d;}}}
+  if(best===1e18){var m=r.mid,dy=(m[0]-lat)*111320,dx=(m[1]-lng)*84500;best=dx*dx+dy*dy;}
+  return best;
+}
+function nearest(lat,lng,street,hn){
+  var pool=IDX;
   if(street){
-    var want=norm(street);
-    var same=IDX.filter(function(r){return norm(r.st)===want;});
-    if(same.length)pool=same;
+    var want=norm(street),same=IDX.filter(function(r){return norm(r.st)===want;});
+    if(same.length){
+      pool=same;
+      var n=parseInt(String(hn||'').replace(/\D/g,''),10);
+      if(n>0){var inr=same.filter(function(r){return r.lo!=null&&n>=r.lo&&n<=r.hi;});if(inr.length)pool=inr;}
+    }
   }
-  for(var i=0;i<pool.length;i++){
-    var m=pool[i].mid,dy=(m[0]-lat)*111320,dx=(m[1]-lng)*84500,d=dx*dx+dy*dy;
-    if(d<bd){bd=d;best=pool[i];}
-  }
+  var best=null,bd=1e18;
+  for(var i=0;i<pool.length;i++){var d=blockDist(pool[i],lat,lng);if(d<bd){bd=d;best=pool[i];}}
   return best?{r:best,dist:Math.sqrt(bd)}:null;
 }
 
@@ -256,7 +268,7 @@ ai.addEventListener('input',function(){
           b.addEventListener('click',function(){
             var ft=f[+b.getAttribute('data-i')],c=ft.geometry.coordinates;
             as.style.display='none';ai.value=b.textContent;
-            var n=nearest(c[1],c[0],ft.properties&&ft.properties.street);
+            var pr=ft.properties||{};var n=nearest(c[1],c[0],pr.street,pr.housenumber);
             if(!n)return;
             if(n.dist>900){alert('That address does not appear to be in Senate District 26.');return;}
             show(n.r);
