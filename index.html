@@ -205,7 +205,8 @@ function show(r){
   }
 }
 
-function norm(s){return String(s||'').toLowerCase().replace(/(\d)(st|nd|rd|th)\b/g,'$1').replace(/[^a-z0-9]+/g,' ').trim();}
+var ABBR={hts:'heights',gdns:'gardens',cmns:'commons',rdwy:'roadway',brdg:'bridge',expy:'expressway',exwpy:'expressway',pkwy:'parkway',blvd:'boulevard',ter:'terrace',pl:'place',ave:'avenue',rd:'road',ct:'court',ln:'lane',dr:'drive',plz:'plaza',sq:'square',aly:'alley',n:'north',s:'south',e:'east',w:'west',mt:'mount',ft:'fort'};
+function norm(s){var a=String(s||'').toLowerCase().replace(/(\d)(st|nd|rd|th)\b/g,'$1').replace(/[^a-z0-9]+/g,' ').trim().split(' ');return a.map(function(t,i){if(t==='st')return (i<a.length-1&&!/^\d+$/.test(a[i-1]||''))?'saint':'street';return ABBR[t]||t;}).join(' ');}
 function segDist(lat,lng,a,b){
   var ay=(a[0]-lat)*111320,ax=(a[1]-lng)*84500,by=(b[0]-lat)*111320,bx=(b[1]-lng)*84500;
   var vx=bx-ax,vy=by-ay,L=vx*vx+vy*vy,t=L?Math.max(0,Math.min(1,-(ax*vx+ay*vy)/L)):0;
