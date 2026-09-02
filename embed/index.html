@@ -33,11 +33,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--navy);dis
 'use strict';
 var IDX=[],map,marker;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function nearest(lat,lng){
-  var best=null,bd=1e9;
-  for(var i=0;i<IDX.length;i++){
-    var m=IDX[i].mid,dy=(m[0]-lat)*111320,dx=(m[1]-lng)*84500,d=dx*dx+dy*dy;
-    if(d<bd){bd=d;best=IDX[i];}
+function norm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+function nearest(lat,lng,street){
+  var best=null,bd=1e9,pool=IDX;
+  if(street){
+    var want=norm(street);
+    var same=IDX.filter(function(r){return norm(r.st)===want;});
+    if(same.length)pool=same;
+  }
+  for(var i=0;i<pool.length;i++){
+    var m=pool[i].mid,dy=(m[0]-lat)*111320,dx=(m[1]-lng)*84500,d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=pool[i];}
   }
   return best?{r:best,dist:Math.sqrt(bd)}:null;
 }
@@ -87,9 +93,9 @@ ai.addEventListener('input',function(){
         as.style.display='block';
         Array.prototype.forEach.call(as.querySelectorAll('button'),function(b){
           b.addEventListener('click',function(){
-            var c=f[+b.getAttribute('data-i')].geometry.coordinates;
+            var ft=f[+b.getAttribute('data-i')],c=ft.geometry.coordinates;
             as.style.display='none';ai.value=b.textContent;
-            var n=nearest(c[1],c[0]);
+            var n=nearest(c[1],c[0],ft.properties&&ft.properties.street);
             if(!n)return;
             if(n.dist>900){alert('That address does not appear to be in Senate District 26.');return;}
             if(marker)map.removeLayer(marker);
